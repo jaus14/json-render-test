@@ -64,8 +64,14 @@ export const defaultSpec: Spec = {
       props: {
         columns: ["名前", "メール", "ロール", "ステータス", "作成日"],
         rows: { $state: "/userRows" },
+        rowIds: { $state: "/userRowIds" },
+        selectedIds: { $state: "/selectedIds" },
       },
       children: [],
+      on: {
+        select: { action: "toggleSelect", params: { userId: { $state: "/selectedIds" } } },
+        selectAll: { action: "toggleSelectAll" },
+      },
     },
 
     // Bottom action bar — only visible when at least 1 user is selected
