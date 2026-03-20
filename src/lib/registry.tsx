@@ -57,6 +57,7 @@ export const { registry, handlers } = defineRegistry(catalog, {
           (u: Record<string, unknown>) => !selectedSet.has(u.id as string)
         ),
         "/selectedIds": [],
+        "/selectedCount": 0,
       }));
     },
     editUser: async (params, setState, state) => {
@@ -91,22 +92,26 @@ export const { registry, handlers } = defineRegistry(catalog, {
       if (!params) return;
       const selected = (state["/selectedIds"] as string[]) || [];
       const isSelected = selected.includes(params.userId);
+      const newSelected = isSelected
+        ? selected.filter((id: string) => id !== params.userId)
+        : [...selected, params.userId];
       setState((prev) => ({
         ...prev,
-        "/selectedIds": isSelected
-          ? selected.filter((id: string) => id !== params.userId)
-          : [...selected, params.userId],
+        "/selectedIds": newSelected,
+        "/selectedCount": newSelected.length,
       }));
     },
     toggleSelectAll: async (_params, setState, state) => {
       const users = (state["/users"] as Array<Record<string, unknown>>) || [];
       const selected = (state["/selectedIds"] as string[]) || [];
       const allSelected = selected.length === users.length;
+      const newSelected = allSelected
+        ? []
+        : users.map((u: Record<string, unknown>) => u.id as string);
       setState((prev) => ({
         ...prev,
-        "/selectedIds": allSelected
-          ? []
-          : users.map((u: Record<string, unknown>) => u.id as string),
+        "/selectedIds": newSelected,
+        "/selectedCount": newSelected.length,
       }));
     },
     searchUsers: async (params, setState) => {

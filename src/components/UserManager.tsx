@@ -40,6 +40,7 @@ export function UserManager() {
       "/users": sampleUsers,
       "/filteredUsers": sampleUsers,
       "/selectedIds": [] as string[],
+      "/selectedCount": 0,
       "/searchQuery": "",
       "/newUserName": "",
       "/newUserEmail": "",
