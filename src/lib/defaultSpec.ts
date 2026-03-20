@@ -12,14 +12,14 @@ export const defaultSpec: Spec = {
     page: {
       type: "Stack",
       props: { direction: "vertical", gap: "lg" },
-      children: ["header", "toolbar", "user-table"],
+      children: ["header", "toolbar", "user-table", "bottom-bar"],
     },
 
     // Header
     header: {
       type: "Stack",
       props: { direction: "horizontal", justify: "between", align: "center" },
-      children: ["title-section", "add-btn"],
+      children: ["title-section"],
     },
     "title-section": {
       type: "Stack",
@@ -36,27 +36,12 @@ export const defaultSpec: Spec = {
       props: { text: "ユーザーの追加・編集・削除を行います", variant: "muted" },
       children: [],
     },
-    "add-btn": {
-      type: "Button",
-      props: { label: "＋ ユーザー追加", variant: "default" },
-      children: [],
-      on: {
-        press: {
-          action: "addUser",
-          params: {
-            name: { $state: "/newUserName" },
-            email: { $state: "/newUserEmail" },
-            role: { $state: "/newUserRole" },
-          },
-        },
-      },
-    },
 
-    // Toolbar: search + bulk actions
+    // Toolbar: search
     toolbar: {
       type: "Stack",
       props: { direction: "horizontal", gap: "md", align: "center" },
-      children: ["search-input", "bulk-delete-btn"],
+      children: ["search-input"],
     },
     "search-input": {
       type: "Input",
@@ -72,31 +57,63 @@ export const defaultSpec: Spec = {
         },
       },
     },
-    "bulk-delete-btn": {
-      type: "Button",
-      props: { label: "選択を削除", variant: "destructive" },
-      children: [],
-      on: {
-        press: { action: "deleteSelectedUsers" },
-      },
-    },
 
-    // User table
+    // User table with checkbox column
     "user-table": {
       type: "Table",
       props: {
         columns: [
-          { key: "select", header: "選択", width: "60px" },
+          { key: "select", header: "", width: "50px" },
           { key: "name", header: "名前" },
           { key: "email", header: "メール" },
           { key: "role", header: "ロール" },
           { key: "status", header: "ステータス" },
           { key: "createdAt", header: "作成日" },
-          { key: "actions", header: "操作" },
         ],
         data: { $state: "/filteredUsers" },
       },
       children: [],
+    },
+
+    // Bottom action bar — only visible when at least 1 user is selected
+    "bottom-bar": {
+      type: "Card",
+      props: {
+        title: "",
+        description: "",
+      },
+      children: ["bottom-bar-content"],
+      visible: { $state: "/selectedCount", gt: 0 },
+    },
+    "bottom-bar-content": {
+      type: "Stack",
+      props: { direction: "horizontal", gap: "md", align: "center", justify: "between" },
+      children: ["selected-count-text", "delete-selected-btn"],
+    },
+    "selected-count-text": {
+      type: "Text",
+      props: {
+        text: { $template: "${/selectedCount} 件選択中" },
+        variant: "default",
+      },
+      children: [],
+    },
+    "delete-selected-btn": {
+      type: "Button",
+      props: { label: "選択したユーザーを削除", variant: "destructive" },
+      children: [],
+      on: {
+        press: {
+          action: "deleteSelectedUsers",
+          confirm: {
+            title: "ユーザーの削除",
+            message: "選択したユーザーを削除しますか？この操作は取り消せません。",
+            confirmLabel: "削除する",
+            cancelLabel: "キャンセル",
+            variant: "danger",
+          },
+        },
+      },
     },
   },
 };
