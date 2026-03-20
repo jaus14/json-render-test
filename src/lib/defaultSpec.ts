@@ -68,10 +68,6 @@ export const defaultSpec: Spec = {
         selectedIds: { $state: "/selectedIds" },
       },
       children: [],
-      on: {
-        select: { action: "toggleSelect", params: { userId: { $state: "/selectedIds" } } },
-        selectAll: { action: "toggleSelectAll" },
-      },
     },
 
     // Bottom action bar — only visible when at least 1 user is selected
