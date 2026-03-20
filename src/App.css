@@ -36,7 +36,7 @@ body {
 
 .app-layout {
   display: flex;
-  min-height: 100vh;
+  min-height: 100dvh;
 }
 
 .main-content {
@@ -385,7 +385,7 @@ body {
   border-left: 1px solid var(--border);
   display: flex;
   flex-direction: column;
-  height: 100vh;
+  height: 100dvh;
   position: sticky;
   top: 0;
 }
@@ -548,7 +548,7 @@ body {
   .chat-panel {
     width: 100%;
     min-width: unset;
-    height: 50vh;
+    height: 50dvh;
     border-left: none;
     border-top: 1px solid var(--border);
     position: static;
