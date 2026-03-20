@@ -1,4 +1,4 @@
-import { useState, useCallback, useMemo } from "react";
+import { useState, useCallback, useMemo, useRef } from "react";
 import { Renderer, JSONUIProvider } from "@json-render/react";
 import type { Spec } from "@json-render/core";
 import { registry } from "../lib/registry";
@@ -39,7 +39,9 @@ export function UserManager() {
     );
   }, [users, searchQuery]);
 
+  const specRevision = useRef(0);
   const handleSpecGenerated = useCallback((spec: Spec) => {
+    specRevision.current += 1;
     setCurrentSpec(spec);
   }, []);
 
@@ -210,6 +212,7 @@ export function UserManager() {
         {/* json-render rendered area */}
         <div className="rendered-ui">
           <JSONUIProvider
+            key={specRevision.current}
             registry={registry}
             initialState={stateModel}
             handlers={actionHandlers}
