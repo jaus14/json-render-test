@@ -11,7 +11,7 @@ const presets: Record<string, Spec> = {
       page: {
         type: "Stack",
         props: { direction: "vertical", gap: "lg" },
-        children: ["header", "toolbar", "user-grid"],
+        children: ["header", "toolbar", "user-table"],
       },
       header: {
         type: "Stack",
@@ -25,7 +25,7 @@ const presets: Record<string, Spec> = {
       },
       "page-title": {
         type: "Heading",
-        props: { level: 2, text: "ユーザー管理" },
+        props: { level: "h2", text: "ユーザー管理" },
         children: [],
       },
       "page-desc": {
@@ -73,9 +73,12 @@ const presets: Record<string, Spec> = {
         children: [],
         on: { press: { action: "deleteSelectedUsers" } },
       },
-      "user-grid": {
-        type: "Grid",
-        props: { columns: 3, gap: "md" },
+      "user-table": {
+        type: "Table",
+        props: {
+          columns: ["名前", "メール", "ロール", "ステータス", "作成日"],
+          rows: { $state: "/userRows" },
+        },
         children: [],
       },
     },
@@ -85,7 +88,7 @@ const presets: Record<string, Spec> = {
     elements: {
       page: {
         type: "Card",
-        props: { title: "ユーザー管理", description: "コンパクトビュー", maxWidth: "lg" },
+        props: { title: "ユーザー管理", description: "コンパクトビュー" },
         children: ["inner"],
       },
       inner: {
@@ -141,13 +144,8 @@ const presets: Record<string, Spec> = {
       "user-table": {
         type: "Table",
         props: {
-          columns: [
-            { key: "name", header: "名前" },
-            { key: "email", header: "メール" },
-            { key: "role", header: "ロール" },
-            { key: "status", header: "ステータス" },
-          ],
-          data: { $state: "/filteredUsers" },
+          columns: ["名前", "メール", "ロール", "ステータス"],
+          rows: { $state: "/userRows" },
         },
         children: [],
       },
@@ -214,16 +212,8 @@ const presets: Record<string, Spec> = {
       "user-table": {
         type: "Table",
         props: {
-          columns: [
-            { key: "select", header: "✓", width: "40px" },
-            { key: "name", header: "ユーザー名" },
-            { key: "email", header: "メールアドレス" },
-            { key: "role", header: "権限" },
-            { key: "status", header: "状態" },
-            { key: "createdAt", header: "登録日" },
-            { key: "actions", header: "" },
-          ],
-          data: { $state: "/filteredUsers" },
+          columns: ["ユーザー名", "メールアドレス", "権限", "状態", "登録日"],
+          rows: { $state: "/userRows" },
         },
         children: [],
       },

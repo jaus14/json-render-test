@@ -1,7 +1,7 @@
 import { useState, useCallback, useMemo, useRef } from "react";
 import { Renderer, JSONUIProvider } from "@json-render/react";
 import type { Spec } from "@json-render/core";
-import { registry } from "../lib/registry";
+import { registry, usersToRows } from "../lib/registry";
 import { sampleUsers } from "../lib/sampleUsers";
 import { defaultSpec } from "../lib/defaultSpec";
 import { saveSpec, loadSpec, clearSpec } from "../lib/specStorage";
@@ -39,6 +39,7 @@ export function UserManager() {
     () => ({
       "/users": sampleUsers,
       "/filteredUsers": sampleUsers,
+      "/userRows": usersToRows(sampleUsers as unknown as Record<string, unknown>[]),
       "/selectedIds": [] as string[],
       "/selectedCount": 0,
       "/searchQuery": "",

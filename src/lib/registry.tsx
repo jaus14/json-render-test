@@ -16,10 +16,28 @@ function filterUsers(users: UserRecord[], query: string): UserRecord[] {
   );
 }
 
-function syncFilteredUsers(prev: State, newUsers: UserRecord[]): State {
-  const query = (prev["/searchQuery"] as string) || "";
-  return { ...prev, "/users": newUsers, "/filteredUsers": filterUsers(newUsers, query) };
+function usersToRows(users: UserRecord[]): string[][] {
+  return users.map((u) => [
+    u.name as string,
+    u.email as string,
+    u.role as string,
+    u.status as string,
+    u.createdAt as string,
+  ]);
 }
+
+function syncUsers(prev: State, newUsers: UserRecord[]): State {
+  const query = (prev["/searchQuery"] as string) || "";
+  const filtered = filterUsers(newUsers, query);
+  return {
+    ...prev,
+    "/users": newUsers,
+    "/filteredUsers": filtered,
+    "/userRows": usersToRows(filtered),
+  };
+}
+
+export { usersToRows };
 
 export const { registry, handlers } = defineRegistry(catalog, {
   components: {
@@ -54,13 +72,13 @@ export const { registry, handlers } = defineRegistry(catalog, {
         createdAt: new Date().toISOString().split("T")[0],
       };
       const newUsers = [...users, newUser];
-      setState((prev) => syncFilteredUsers(prev, newUsers));
+      setState((prev) => syncUsers(prev, newUsers));
     },
     deleteUser: async (params, setState, state) => {
       if (!params) return;
       const users = (state["/users"] as UserRecord[]) || [];
       const newUsers = users.filter((u) => u.id !== params.userId);
-      setState((prev) => syncFilteredUsers(prev, newUsers));
+      setState((prev) => syncUsers(prev, newUsers));
     },
     deleteSelectedUsers: async (_params, setState, state) => {
       const users = (state["/users"] as UserRecord[]) || [];
@@ -68,7 +86,7 @@ export const { registry, handlers } = defineRegistry(catalog, {
       const selectedSet = new Set(selected);
       const newUsers = users.filter((u) => !selectedSet.has(u.id as string));
       setState((prev) => ({
-        ...syncFilteredUsers(prev, newUsers),
+        ...syncUsers(prev, newUsers),
         "/selectedIds": [],
         "/selectedCount": 0,
       }));
@@ -94,7 +112,7 @@ export const { registry, handlers } = defineRegistry(catalog, {
           : u
       );
       setState((prev) => ({
-        ...syncFilteredUsers(prev, newUsers),
+        ...syncUsers(prev, newUsers),
         "/showEditDialog": false,
         "/editingUser": null,
       }));
@@ -129,10 +147,12 @@ export const { registry, handlers } = defineRegistry(catalog, {
       if (!params) return;
       const users = (state["/users"] as UserRecord[]) || [];
       const query = params.query || "";
+      const filtered = filterUsers(users, query);
       setState((prev) => ({
         ...prev,
         "/searchQuery": query,
-        "/filteredUsers": filterUsers(users, query),
+        "/filteredUsers": filtered,
+        "/userRows": usersToRows(filtered),
       }));
     },
   },
