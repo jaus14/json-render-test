@@ -80,9 +80,14 @@ export function ChatPanel({
         const text =
           data.content?.[0]?.text || "スペックの生成に失敗しました。";
 
-        // Try to parse as JSON spec
+        // Try to parse as JSON spec - strip markdown code fences if present
         try {
-          const spec = JSON.parse(text) as Spec;
+          let jsonText = text.trim();
+          const fenceMatch = jsonText.match(/^```(?:json)?\s*\n?([\s\S]*?)\n?\s*```$/);
+          if (fenceMatch) {
+            jsonText = fenceMatch[1].trim();
+          }
+          const spec = JSON.parse(jsonText) as Spec;
           if (spec.root && spec.elements) {
             onSpecGenerated(spec);
             setMessages((prev) => [
