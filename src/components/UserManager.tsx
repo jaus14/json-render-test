@@ -35,19 +35,21 @@ export function UserManager() {
   }, []);
 
   // Initial state for json-render
+  // Keys must NOT have leading slashes — the store uses JSON Pointer paths
+  // internally, so { users: [...] } is accessed as $state: "/users"
   const initialState = useMemo(
     () => ({
-      "/users": sampleUsers,
-      "/filteredUsers": sampleUsers,
-      "/userRows": usersToRows(sampleUsers as unknown as Record<string, unknown>[]),
-      "/selectedIds": [] as string[],
-      "/selectedCount": 0,
-      "/searchQuery": "",
-      "/newUserName": "",
-      "/newUserEmail": "",
-      "/newUserRole": "viewer",
-      "/editingUser": null,
-      "/showEditDialog": false,
+      users: sampleUsers,
+      filteredUsers: sampleUsers,
+      userRows: usersToRows(sampleUsers as unknown as Record<string, unknown>[]),
+      selectedIds: [] as string[],
+      selectedCount: 0,
+      searchQuery: "",
+      newUserName: "",
+      newUserEmail: "",
+      newUserRole: "viewer",
+      editingUser: null as unknown,
+      showEditDialog: false,
     }),
     []
   );
