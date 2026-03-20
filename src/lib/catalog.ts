@@ -14,7 +14,21 @@ export const catalog = defineCatalog(schema, {
     Dialog: shadcnComponentDefinitions.Dialog,
 
     // Data Display
-    Table: shadcnComponentDefinitions.Table,
+    Table: {
+      props: z.object({
+        columns: z.array(z.string()),
+        rows: z.array(z.array(z.string())),
+        caption: z.string().nullable(),
+        rowIds: z.array(z.string()).nullable(),
+        selectedIds: z.array(z.string()).nullable(),
+      }),
+      description:
+        'Data table with optional row checkboxes. columns: header labels. rows: 2D string array. rowIds: optional array of IDs per row (enables checkboxes). selectedIds: state-bound array of selected IDs.',
+      example: {
+        columns: ["Name", "Role"],
+        rows: [["Alice", "Admin"], ["Bob", "User"]],
+      },
+    },
     Heading: shadcnComponentDefinitions.Heading,
     Text: shadcnComponentDefinitions.Text,
     Badge: shadcnComponentDefinitions.Badge,
