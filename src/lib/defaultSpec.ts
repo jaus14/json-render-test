@@ -28,7 +28,7 @@ export const defaultSpec: Spec = {
     },
     "page-title": {
       type: "Heading",
-      props: { level: 2, text: "ユーザー管理" },
+      props: { level: "h2", text: "ユーザー管理" },
       children: [],
     },
     "page-desc": {
@@ -58,19 +58,12 @@ export const defaultSpec: Spec = {
       },
     },
 
-    // User table with checkbox column
+    // User table
     "user-table": {
       type: "Table",
       props: {
-        columns: [
-          { key: "select", header: "", width: "50px" },
-          { key: "name", header: "名前" },
-          { key: "email", header: "メール" },
-          { key: "role", header: "ロール" },
-          { key: "status", header: "ステータス" },
-          { key: "createdAt", header: "作成日" },
-        ],
-        data: { $state: "/filteredUsers" },
+        columns: ["名前", "メール", "ロール", "ステータス", "作成日"],
+        rows: { $state: "/userRows" },
       },
       children: [],
     },

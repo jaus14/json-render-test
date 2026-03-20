@@ -51,6 +51,7 @@ ${actionNames.join(", ")}
 ## 状態パス（$stateで参照可能）
 - /users: ユーザー配列 [{id, name, email, role, status, createdAt}]
 - /filteredUsers: フィルタ済みユーザー配列
+- /userRows: テーブル表示用の2次元文字列配列（filteredUsersから自動生成）
 - /selectedIds: 選択中のユーザーID配列
 - /searchQuery: 検索クエリ文字列
 - /newUserName, /newUserEmail, /newUserRole: 新規ユーザー入力値
@@ -61,14 +62,14 @@ ${actionNames.join(", ")}
 - Card: { title, description, maxWidth("sm"|"md"|"lg"|"full"), centered }
 - Stack: { direction("horizontal"|"vertical"), gap("sm"|"md"|"lg"|"none"), align("start"|"center"|"end"|"stretch"), justify("start"|"center"|"end"|"between"|"around") }
 - Grid: { columns, gap("sm"|"md"|"lg") }
-- Heading: { level(1-6), text }
+- Heading: { level("h1"|"h2"|"h3"|"h4"), text }
 - Text: { text, variant("default"|"muted"|"destructive") }
 - Button: { label, variant("default"|"secondary"|"destructive"|"outline"|"ghost"|"link"), size("default"|"sm"|"lg"|"icon"), disabled }
 - Input: { placeholder, value, label, disabled }
 - Select: { options: [{label, value}], value, placeholder, label }
 - Checkbox: { label, checked }
 - Badge: { text, variant("default"|"secondary"|"destructive"|"outline") }
-- Table: { columns: [{key, header, width?}], data }
+- Table: { columns: ["列名1", "列名2", ...], rows: { $state: "/userRows" }, caption? }
 - Dialog: { title, description, open }
 - Alert: { title, description, variant("default"|"destructive") }
 - Avatar: { src, fallback, size("sm"|"md"|"lg") }

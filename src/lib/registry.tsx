@@ -3,6 +3,42 @@ import { shadcnComponents } from "@json-render/shadcn";
 import { catalog } from "./catalog";
 import { v4 as uuidv4 } from "uuid";
 
+type UserRecord = Record<string, unknown>;
+type State = Record<string, unknown>;
+
+function filterUsers(users: UserRecord[], query: string): UserRecord[] {
+  if (!query) return users;
+  const q = query.toLowerCase();
+  return users.filter(
+    (u) =>
+      (u.name as string).toLowerCase().includes(q) ||
+      (u.email as string).toLowerCase().includes(q)
+  );
+}
+
+function usersToRows(users: UserRecord[]): string[][] {
+  return users.map((u) => [
+    u.name as string,
+    u.email as string,
+    u.role as string,
+    u.status as string,
+    u.createdAt as string,
+  ]);
+}
+
+function syncUsers(prev: State, newUsers: UserRecord[]): State {
+  const query = (prev["/searchQuery"] as string) || "";
+  const filtered = filterUsers(newUsers, query);
+  return {
+    ...prev,
+    "/users": newUsers,
+    "/filteredUsers": filtered,
+    "/userRows": usersToRows(filtered),
+  };
+}
+
+export { usersToRows };
+
 export const { registry, handlers } = defineRegistry(catalog, {
   components: {
     Card: shadcnComponents.Card,
@@ -26,7 +62,7 @@ export const { registry, handlers } = defineRegistry(catalog, {
   actions: {
     addUser: async (params, setState, state) => {
       if (!params) return;
-      const users = (state["/users"] as Array<Record<string, unknown>>) || [];
+      const users = (state["/users"] as UserRecord[]) || [];
       const newUser = {
         id: uuidv4(),
         name: params.name,
@@ -35,37 +71,30 @@ export const { registry, handlers } = defineRegistry(catalog, {
         status: "active",
         createdAt: new Date().toISOString().split("T")[0],
       };
-      setState((prev) => ({ ...prev, "/users": [...users, newUser] }));
+      const newUsers = [...users, newUser];
+      setState((prev) => syncUsers(prev, newUsers));
     },
     deleteUser: async (params, setState, state) => {
       if (!params) return;
-      const users = (state["/users"] as Array<Record<string, unknown>>) || [];
-      setState((prev) => ({
-        ...prev,
-        "/users": users.filter(
-          (u: Record<string, unknown>) => u.id !== params.userId
-        ),
-      }));
+      const users = (state["/users"] as UserRecord[]) || [];
+      const newUsers = users.filter((u) => u.id !== params.userId);
+      setState((prev) => syncUsers(prev, newUsers));
     },
     deleteSelectedUsers: async (_params, setState, state) => {
-      const users = (state["/users"] as Array<Record<string, unknown>>) || [];
+      const users = (state["/users"] as UserRecord[]) || [];
       const selected = (state["/selectedIds"] as string[]) || [];
       const selectedSet = new Set(selected);
+      const newUsers = users.filter((u) => !selectedSet.has(u.id as string));
       setState((prev) => ({
-        ...prev,
-        "/users": users.filter(
-          (u: Record<string, unknown>) => !selectedSet.has(u.id as string)
-        ),
+        ...syncUsers(prev, newUsers),
         "/selectedIds": [],
         "/selectedCount": 0,
       }));
     },
     editUser: async (params, setState, state) => {
       if (!params) return;
-      const users = (state["/users"] as Array<Record<string, unknown>>) || [];
-      const user = users.find(
-        (u: Record<string, unknown>) => u.id === params.userId
-      );
+      const users = (state["/users"] as UserRecord[]) || [];
+      const user = users.find((u) => u.id === params.userId);
       if (user) {
         setState((prev) => ({
           ...prev,
@@ -76,14 +105,14 @@ export const { registry, handlers } = defineRegistry(catalog, {
     },
     saveUser: async (params, setState, state) => {
       if (!params) return;
-      const users = (state["/users"] as Array<Record<string, unknown>>) || [];
+      const users = (state["/users"] as UserRecord[]) || [];
+      const newUsers = users.map((u) =>
+        u.id === params.userId
+          ? { ...u, name: params.name, email: params.email, role: params.role }
+          : u
+      );
       setState((prev) => ({
-        ...prev,
-        "/users": users.map((u: Record<string, unknown>) =>
-          u.id === params.userId
-            ? { ...u, name: params.name, email: params.email, role: params.role }
-            : u
-        ),
+        ...syncUsers(prev, newUsers),
         "/showEditDialog": false,
         "/editingUser": null,
       }));
@@ -102,21 +131,29 @@ export const { registry, handlers } = defineRegistry(catalog, {
       }));
     },
     toggleSelectAll: async (_params, setState, state) => {
-      const users = (state["/users"] as Array<Record<string, unknown>>) || [];
+      const users = (state["/users"] as UserRecord[]) || [];
       const selected = (state["/selectedIds"] as string[]) || [];
       const allSelected = selected.length === users.length;
       const newSelected = allSelected
         ? []
-        : users.map((u: Record<string, unknown>) => u.id as string);
+        : users.map((u) => u.id as string);
       setState((prev) => ({
         ...prev,
         "/selectedIds": newSelected,
         "/selectedCount": newSelected.length,
       }));
     },
-    searchUsers: async (params, setState) => {
+    searchUsers: async (params, setState, state) => {
       if (!params) return;
-      setState((prev) => ({ ...prev, "/searchQuery": params.query }));
+      const users = (state["/users"] as UserRecord[]) || [];
+      const query = params.query || "";
+      const filtered = filterUsers(users, query);
+      setState((prev) => ({
+        ...prev,
+        "/searchQuery": query,
+        "/filteredUsers": filtered,
+        "/userRows": usersToRows(filtered),
+      }));
     },
   },
 });
