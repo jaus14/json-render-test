@@ -1,4 +1,5 @@
 import { useState, useRef, useEffect } from "react";
+import { Settings, Send } from "lucide-react";
 import type { Spec } from "@json-render/core";
 import { generateMockResponse } from "../lib/mockAi";
 import { buildSystemPrompt } from "../lib/promptBuilder";
@@ -143,7 +144,7 @@ export function ChatPanel({
           onClick={() => setShowSettings(!showSettings)}
           title="API設定"
         >
-          ⚙
+          <Settings className="w-4 h-4" />
         </button>
       </div>
 
@@ -188,7 +189,7 @@ export function ChatPanel({
           disabled={loading}
         />
         <button onClick={handleSend} disabled={loading || !input.trim()}>
-          送信
+          <Send className="w-4 h-4" />
         </button>
       </div>
     </div>
