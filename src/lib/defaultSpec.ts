@@ -11,7 +11,7 @@ export const defaultSpec: Spec = {
     // Page container
     page: {
       type: "Stack",
-      props: { direction: "vertical", gap: "lg" },
+      props: { direction: "vertical", gap: "lg", align: "stretch" },
       children: ["header", "toolbar", "user-table", "bottom-bar"],
     },
 
