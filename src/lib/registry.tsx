@@ -4,6 +4,7 @@ import { catalog } from "./catalog";
 import { v4 as uuidv4 } from "uuid";
 import { CustomTable } from "../components/CustomTable";
 import { MatrixTable } from "../components/MatrixTable";
+import { PieChartComponent } from "../components/PieChartComponent";
 
 type UserRecord = Record<string, unknown>;
 type State = Record<string, unknown>;
@@ -56,6 +57,7 @@ export const { registry, handlers } = defineRegistry(catalog, {
     Dialog: shadcnComponents.Dialog,
     Table: CustomTable,
     MatrixTable: MatrixTable,
+    PieChart: PieChartComponent,
     Heading: shadcnComponents.Heading,
     Text: shadcnComponents.Text,
     Badge: shadcnComponents.Badge,

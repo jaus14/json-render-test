@@ -74,7 +74,7 @@ export const defaultSpec: Spec = {
     "matrix-section": {
       type: "Stack",
       props: { direction: "vertical", gap: "md", align: "stretch" },
-      children: ["matrix-title", "matrix-desc", "matrix-table"],
+      children: ["matrix-title", "matrix-desc", "matrix-charts-row"],
     },
     "matrix-title": {
       type: "Heading",
@@ -85,6 +85,11 @@ export const defaultSpec: Spec = {
       type: "Text",
       props: { text: "地域別・四半期別の売上データ（万円）", variant: "muted" },
       children: [],
+    },
+    "matrix-charts-row": {
+      type: "Grid",
+      props: { columns: 2, gap: "md" },
+      children: ["matrix-table", "pie-chart-region"],
     },
     "matrix-table": {
       type: "MatrixTable",
@@ -100,6 +105,15 @@ export const defaultSpec: Spec = {
           ["310", "280", "320", "350"],
         ],
         caption: null,
+      },
+      children: [],
+    },
+    "pie-chart-region": {
+      type: "PieChart",
+      props: {
+        labels: ["東京", "大阪", "名古屋", "福岡", "札幌"],
+        values: [5560, 3840, 2750, 1860, 1260],
+        caption: "地域別 年間売上構成（万円）",
       },
       children: [],
     },

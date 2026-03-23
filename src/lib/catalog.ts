@@ -46,6 +46,20 @@ export const catalog = defineCatalog(schema, {
         rows: [["100", "120", "130", "110"], ["90", "95", "100", "105"]],
       },
     },
+    PieChart: {
+      props: z.object({
+        labels: z.array(z.string()),
+        values: z.array(z.number()),
+        caption: z.string().nullable(),
+      }),
+      description:
+        'Donut-style pie chart. labels: slice names. values: numeric values per slice. caption: optional description text.',
+      example: {
+        labels: ["Desktop", "Mobile", "Tablet"],
+        values: [60, 30, 10],
+        caption: "Device breakdown",
+      },
+    },
     Heading: shadcnComponentDefinitions.Heading,
     Text: shadcnComponentDefinitions.Text,
     Badge: shadcnComponentDefinitions.Badge,
