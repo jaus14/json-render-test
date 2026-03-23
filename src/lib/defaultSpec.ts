@@ -78,42 +78,36 @@ export const defaultSpec: Spec = {
     },
     "charts-title": {
       type: "Heading",
-      props: { level: "h3", text: "四半期売上レポート" },
+      props: { level: "h3", text: "ユーザー統計" },
       children: [],
     },
     "charts-desc": {
       type: "Text",
-      props: { text: "地域別・四半期別の売上データ（万円）", variant: "muted" },
+      props: { text: "登録ユーザーのロール分布と登録推移", variant: "muted" },
       children: [],
     },
     "charts-row": {
       type: "Grid",
       props: { columns: 2, gap: "md" },
-      children: ["line-chart-sales", "pie-chart-region"],
+      children: ["line-chart-users", "pie-chart-roles"],
     },
-    "line-chart-sales": {
+    "line-chart-users": {
       type: "LineChart",
       props: {
-        xLabels: ["Q1", "Q2", "Q3", "Q4"],
-        series: [
-          { name: "東京", values: [1250, 1380, 1420, 1510] },
-          { name: "大阪", values: [890, 920, 980, 1050] },
-          { name: "名古屋", values: [650, 700, 680, 720] },
-          { name: "福岡", values: [420, 450, 480, 510] },
-          { name: "札幌", values: [310, 280, 320, 350] },
-        ],
-        caption: "地域別 四半期売上推移",
-        xAxisLabel: "四半期",
-        yAxisLabel: "売上（万円）",
+        xLabels: { $state: "/lineXLabels" },
+        series: { $state: "/lineSeries" },
+        caption: "ロール別 累積ユーザー数推移",
+        xAxisLabel: "登録月",
+        yAxisLabel: "ユーザー数",
       },
       children: [],
     },
-    "pie-chart-region": {
+    "pie-chart-roles": {
       type: "PieChart",
       props: {
-        labels: ["東京", "大阪", "名古屋", "福岡", "札幌"],
-        values: [5560, 3840, 2750, 1860, 1260],
-        caption: "地域別 年間売上構成（万円）",
+        labels: { $state: "/pieLabels" },
+        values: { $state: "/pieValues" },
+        caption: "ロール別ユーザー構成",
       },
       children: [],
     },

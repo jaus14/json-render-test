@@ -33,19 +33,66 @@ function usersToRowIds(users: UserRecord[]): string[] {
   return users.map((u) => u.id as string);
 }
 
+const ROLE_LABELS = ["admin", "editor", "viewer"];
+
+function computeChartData(users: UserRecord[]) {
+  // Pie chart: role distribution
+  const roleCounts = new Map<string, number>();
+  for (const u of users) {
+    const role = u.role as string;
+    roleCounts.set(role, (roleCounts.get(role) ?? 0) + 1);
+  }
+  const pieLabels = ROLE_LABELS.filter((r) => roleCounts.has(r));
+  const pieValues = pieLabels.map((r) => roleCounts.get(r) ?? 0);
+
+  // Line chart: cumulative user count per month, per role
+  const sorted = [...users].sort(
+    (a, b) => (a.createdAt as string).localeCompare(b.createdAt as string)
+  );
+  const monthSet = new Set<string>();
+  for (const u of sorted) {
+    monthSet.add((u.createdAt as string).slice(0, 7)); // "YYYY-MM"
+  }
+  const months = [...monthSet].sort();
+  const xLabels = months.map((m) => {
+    const [, mm] = m.split("-");
+    return `${parseInt(mm)}月`;
+  });
+
+  const series = ROLE_LABELS
+    .filter((role) => users.some((u) => u.role === role))
+    .map((role) => {
+      let cumulative = 0;
+      const values = months.map((month) => {
+        cumulative += sorted.filter(
+          (u) => u.role === role && (u.createdAt as string).startsWith(month)
+        ).length;
+        return cumulative;
+      });
+      return { name: role, values };
+    });
+
+  return { pieLabels, pieValues, lineXLabels: xLabels, lineSeries: series };
+}
+
 function syncUsers(prev: State, newUsers: UserRecord[]): State {
   const query = (prev["searchQuery"] as string) || "";
   const filtered = filterUsers(newUsers, query);
+  const chart = computeChartData(newUsers);
   return {
     ...prev,
     users: newUsers,
     filteredUsers: filtered,
     userRows: usersToRows(filtered),
     userRowIds: usersToRowIds(filtered),
+    pieLabels: chart.pieLabels,
+    pieValues: chart.pieValues,
+    lineXLabels: chart.lineXLabels,
+    lineSeries: chart.lineSeries,
   };
 }
 
-export { usersToRows, usersToRowIds };
+export { usersToRows, usersToRowIds, computeChartData };
 
 export const { registry, handlers } = defineRegistry(catalog, {
   components: {
