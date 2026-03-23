@@ -29,6 +29,23 @@ export const catalog = defineCatalog(schema, {
         rows: [["Alice", "Admin"], ["Bob", "User"]],
       },
     },
+    MatrixTable: {
+      props: z.object({
+        columnHeaders: z.array(z.string()),
+        rowHeaders: z.array(z.string()),
+        rows: z.array(z.array(z.string())),
+        caption: z.string().nullable(),
+        cornerLabel: z.string().nullable(),
+      }),
+      description:
+        'Cross-tabulation table with both X-axis (column) and Y-axis (row) headers. cornerLabel: label for the top-left cell. columnHeaders: X-axis labels. rowHeaders: Y-axis labels. rows: 2D data array.',
+      example: {
+        cornerLabel: "Region / Q",
+        columnHeaders: ["Q1", "Q2", "Q3", "Q4"],
+        rowHeaders: ["East", "West"],
+        rows: [["100", "120", "130", "110"], ["90", "95", "100", "105"]],
+      },
+    },
     Heading: shadcnComponentDefinitions.Heading,
     Text: shadcnComponentDefinitions.Text,
     Badge: shadcnComponentDefinitions.Badge,

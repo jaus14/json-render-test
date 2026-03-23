@@ -12,7 +12,7 @@ export const defaultSpec: Spec = {
     page: {
       type: "Stack",
       props: { direction: "vertical", gap: "lg", align: "stretch" },
-      children: ["header", "toolbar", "user-table", "bottom-bar"],
+      children: ["header", "toolbar", "user-table", "bottom-bar", "matrix-section"],
     },
 
     // Header
@@ -66,6 +66,40 @@ export const defaultSpec: Spec = {
         rows: { $state: "/userRows" },
         rowIds: { $state: "/userRowIds" },
         selectedIds: { $state: "/selectedIds" },
+      },
+      children: [],
+    },
+
+    // Matrix table section
+    "matrix-section": {
+      type: "Stack",
+      props: { direction: "vertical", gap: "md", align: "stretch" },
+      children: ["matrix-title", "matrix-desc", "matrix-table"],
+    },
+    "matrix-title": {
+      type: "Heading",
+      props: { level: "h3", text: "四半期売上レポート" },
+      children: [],
+    },
+    "matrix-desc": {
+      type: "Text",
+      props: { text: "地域別・四半期別の売上データ（万円）", variant: "muted" },
+      children: [],
+    },
+    "matrix-table": {
+      type: "MatrixTable",
+      props: {
+        cornerLabel: "地域 \\ 四半期",
+        columnHeaders: ["Q1", "Q2", "Q3", "Q4"],
+        rowHeaders: ["東京", "大阪", "名古屋", "福岡", "札幌"],
+        rows: [
+          ["1,250", "1,380", "1,420", "1,510"],
+          ["890", "920", "980", "1,050"],
+          ["650", "700", "680", "720"],
+          ["420", "450", "480", "510"],
+          ["310", "280", "320", "350"],
+        ],
+        caption: null,
       },
       children: [],
     },
