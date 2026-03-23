@@ -29,21 +29,22 @@ export const catalog = defineCatalog(schema, {
         rows: [["Alice", "Admin"], ["Bob", "User"]],
       },
     },
-    MatrixTable: {
+    LineChart: {
       props: z.object({
-        columnHeaders: z.array(z.string()),
-        rowHeaders: z.array(z.string()),
-        rows: z.array(z.array(z.string())),
+        xLabels: z.array(z.string()),
+        series: z.array(
+          z.object({ name: z.string(), values: z.array(z.number()) })
+        ),
         caption: z.string().nullable(),
-        cornerLabel: z.string().nullable(),
+        xAxisLabel: z.string().nullable(),
+        yAxisLabel: z.string().nullable(),
       }),
       description:
-        'Cross-tabulation table with both X-axis (column) and Y-axis (row) headers. cornerLabel: label for the top-left cell. columnHeaders: X-axis labels. rowHeaders: Y-axis labels. rows: 2D data array.',
+        'Line chart with X/Y axes. xLabels: X-axis tick labels. series: array of {name, values[]} for each line. xAxisLabel/yAxisLabel: axis titles.',
       example: {
-        cornerLabel: "Region / Q",
-        columnHeaders: ["Q1", "Q2", "Q3", "Q4"],
-        rowHeaders: ["East", "West"],
-        rows: [["100", "120", "130", "110"], ["90", "95", "100", "105"]],
+        xLabels: ["Jan", "Feb", "Mar"],
+        series: [{ name: "Sales", values: [100, 150, 130] }],
+        caption: "Monthly sales",
       },
     },
     PieChart: {

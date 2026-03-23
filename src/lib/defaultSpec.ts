@@ -70,41 +70,41 @@ export const defaultSpec: Spec = {
       children: [],
     },
 
-    // Matrix table section
+    // Charts section
     "matrix-section": {
       type: "Stack",
       props: { direction: "vertical", gap: "md", align: "stretch" },
-      children: ["matrix-title", "matrix-desc", "matrix-charts-row"],
+      children: ["charts-title", "charts-desc", "charts-row"],
     },
-    "matrix-title": {
+    "charts-title": {
       type: "Heading",
       props: { level: "h3", text: "四半期売上レポート" },
       children: [],
     },
-    "matrix-desc": {
+    "charts-desc": {
       type: "Text",
       props: { text: "地域別・四半期別の売上データ（万円）", variant: "muted" },
       children: [],
     },
-    "matrix-charts-row": {
+    "charts-row": {
       type: "Grid",
       props: { columns: 2, gap: "md" },
-      children: ["matrix-table", "pie-chart-region"],
+      children: ["line-chart-sales", "pie-chart-region"],
     },
-    "matrix-table": {
-      type: "MatrixTable",
+    "line-chart-sales": {
+      type: "LineChart",
       props: {
-        cornerLabel: "地域 \\ 四半期",
-        columnHeaders: ["Q1", "Q2", "Q3", "Q4"],
-        rowHeaders: ["東京", "大阪", "名古屋", "福岡", "札幌"],
-        rows: [
-          ["1,250", "1,380", "1,420", "1,510"],
-          ["890", "920", "980", "1,050"],
-          ["650", "700", "680", "720"],
-          ["420", "450", "480", "510"],
-          ["310", "280", "320", "350"],
+        xLabels: ["Q1", "Q2", "Q3", "Q4"],
+        series: [
+          { name: "東京", values: [1250, 1380, 1420, 1510] },
+          { name: "大阪", values: [890, 920, 980, 1050] },
+          { name: "名古屋", values: [650, 700, 680, 720] },
+          { name: "福岡", values: [420, 450, 480, 510] },
+          { name: "札幌", values: [310, 280, 320, 350] },
         ],
-        caption: null,
+        caption: "地域別 四半期売上推移",
+        xAxisLabel: "四半期",
+        yAxisLabel: "売上（万円）",
       },
       children: [],
     },

@@ -3,7 +3,7 @@ import { shadcnComponents } from "@json-render/shadcn";
 import { catalog } from "./catalog";
 import { v4 as uuidv4 } from "uuid";
 import { CustomTable } from "../components/CustomTable";
-import { MatrixTable } from "../components/MatrixTable";
+import { LineChartComponent } from "../components/LineChartComponent";
 import { PieChartComponent } from "../components/PieChartComponent";
 
 type UserRecord = Record<string, unknown>;
@@ -56,7 +56,7 @@ export const { registry, handlers } = defineRegistry(catalog, {
     Tabs: shadcnComponents.Tabs,
     Dialog: shadcnComponents.Dialog,
     Table: CustomTable,
-    MatrixTable: MatrixTable,
+    LineChart: LineChartComponent,
     PieChart: PieChartComponent,
     Heading: shadcnComponents.Heading,
     Text: shadcnComponents.Text,
