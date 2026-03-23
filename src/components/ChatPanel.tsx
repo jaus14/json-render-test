@@ -1,6 +1,7 @@
-import { useState, useRef, useEffect } from "react";
-import { Settings, Send } from "lucide-react";
+import { useState, useRef, useEffect, useCallback } from "react";
+import { Settings, Send, Square } from "lucide-react";
 import type { Spec } from "@json-render/core";
+import { createMixedStreamParser, applySpecPatch } from "@json-render/core";
 import { generateMockResponse } from "../lib/mockAi";
 import { buildSystemPrompt } from "../lib/promptBuilder";
 
@@ -14,6 +15,43 @@ interface ChatPanelProps {
   onSpecGenerated: (spec: Spec) => void;
   apiKey: string;
   onApiKeyChange: (key: string) => void;
+}
+
+/**
+ * Parse Anthropic SSE stream and yield text deltas.
+ */
+async function* parseAnthropicSSE(
+  reader: ReadableStreamDefaultReader<Uint8Array>,
+): AsyncGenerator<string> {
+  const decoder = new TextDecoder();
+  let buffer = "";
+
+  while (true) {
+    const { done, value } = await reader.read();
+    if (done) break;
+
+    buffer += decoder.decode(value, { stream: true });
+    const lines = buffer.split("\n");
+    buffer = lines.pop() ?? "";
+
+    for (const line of lines) {
+      if (!line.startsWith("data: ")) continue;
+      const data = line.slice(6);
+      if (data === "[DONE]") return;
+
+      try {
+        const event = JSON.parse(data);
+        if (
+          event.type === "content_block_delta" &&
+          event.delta?.type === "text_delta"
+        ) {
+          yield event.delta.text;
+        }
+      } catch {
+        // skip malformed lines
+      }
+    }
+  }
 }
 
 export function ChatPanel({
@@ -33,10 +71,15 @@ export function ChatPanel({
   const [loading, setLoading] = useState(false);
   const [showSettings, setShowSettings] = useState(false);
   const messagesEndRef = useRef<HTMLDivElement>(null);
+  const abortControllerRef = useRef<AbortController | null>(null);
 
   useEffect(() => {
     messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
   }, [messages]);
+
+  const handleStop = useCallback(() => {
+    abortControllerRef.current?.abort();
+  }, []);
 
   async function handleSend() {
     const trimmed = input.trim();
@@ -49,8 +92,12 @@ export function ChatPanel({
 
     try {
       if (apiKey) {
-        // Real AI API call
+        // Streaming AI API call
         const systemPrompt = buildSystemPrompt(currentSpec);
+
+        abortControllerRef.current?.abort();
+        abortControllerRef.current = new AbortController();
+
         const response = await fetch("https://api.anthropic.com/v1/messages", {
           method: "POST",
           headers: {
@@ -62,6 +109,7 @@ export function ChatPanel({
           body: JSON.stringify({
             model: "claude-sonnet-4-20250514",
             max_tokens: 4096,
+            stream: true,
             system: systemPrompt,
             messages: [
               ...messages
@@ -70,6 +118,7 @@ export function ChatPanel({
               { role: "user", content: trimmed },
             ],
           }),
+          signal: abortControllerRef.current.signal,
         });
 
         if (!response.ok) {
@@ -77,42 +126,62 @@ export function ChatPanel({
           throw new Error(`API error: ${response.status} - ${err}`);
         }
 
-        const data = await response.json();
-        const text =
-          data.content?.[0]?.text || "スペックの生成に失敗しました。";
+        const reader = response.body?.getReader();
+        if (!reader) throw new Error("No response body");
 
-        // Try to parse as JSON spec - strip markdown code fences if present
-        try {
-          let jsonText = text.trim();
-          const fenceMatch = jsonText.match(/^```(?:json)?\s*\n?([\s\S]*?)\n?\s*```$/);
-          if (fenceMatch) {
-            jsonText = fenceMatch[1].trim();
-          }
-          const spec = JSON.parse(jsonText) as Spec;
-          if (spec.root && spec.elements) {
-            onSpecGenerated(spec);
-            setMessages((prev) => [
-              ...prev,
-              {
+        // Add placeholder assistant message
+        setMessages((prev) => [...prev, { role: "assistant", content: "" }]);
+
+        let accumulatedText = "";
+        const streamSpec: Spec = { root: "", elements: {} };
+        let hasSpec = false;
+
+        const parser = createMixedStreamParser({
+          onPatch(patch) {
+            hasSpec = true;
+            applySpecPatch(streamSpec, patch);
+            // Progressively update the rendered spec
+            onSpecGenerated({
+              root: streamSpec.root,
+              elements: { ...streamSpec.elements },
+            });
+          },
+          onText(line) {
+            accumulatedText += (accumulatedText ? "\n" : "") + line;
+            setMessages((prev) => {
+              const updated = [...prev];
+              updated[updated.length - 1] = {
                 role: "assistant",
-                content: "UIを更新しました！新しいレイアウトが反映されています。",
-              },
-            ]);
-          } else {
-            setMessages((prev) => [
-              ...prev,
-              { role: "assistant", content: text },
-            ]);
-          }
-        } catch {
-          // Not JSON, show as message
-          setMessages((prev) => [
-            ...prev,
-            { role: "assistant", content: text },
-          ]);
+                content: accumulatedText,
+              };
+              return updated;
+            });
+          },
+        });
+
+        // Process SSE stream and feed text deltas to the mixed parser
+        for await (const textDelta of parseAnthropicSSE(reader)) {
+          parser.push(textDelta);
         }
+        parser.flush();
+
+        // Final message update
+        const finalContent = hasSpec
+          ? accumulatedText
+            ? accumulatedText + "\n\nUIを更新しました！"
+            : "UIを更新しました！"
+          : accumulatedText || "スペックの生成に失敗しました。";
+
+        setMessages((prev) => {
+          const updated = [...prev];
+          updated[updated.length - 1] = {
+            role: "assistant",
+            content: finalContent,
+          };
+          return updated;
+        });
       } else {
-        // Mock AI
+        // Mock AI (non-streaming)
         const result = generateMockResponse(trimmed);
         setMessages((prev) => [
           ...prev,
@@ -123,15 +192,27 @@ export function ChatPanel({
         }
       }
     } catch (err) {
-      setMessages((prev) => [
-        ...prev,
-        {
-          role: "assistant",
-          content: `エラーが発生しました: ${err instanceof Error ? err.message : "不明なエラー"}`,
-        },
-      ]);
+      if (err instanceof DOMException && err.name === "AbortError") {
+        // User cancelled - keep accumulated text
+        setMessages((prev) => {
+          const last = prev[prev.length - 1];
+          if (last?.role === "assistant" && !last.content) {
+            return prev.slice(0, -1);
+          }
+          return prev;
+        });
+      } else {
+        setMessages((prev) => [
+          ...prev,
+          {
+            role: "assistant",
+            content: `エラーが発生しました: ${err instanceof Error ? err.message : "不明なエラー"}`,
+          },
+        ]);
+      }
     } finally {
       setLoading(false);
+      abortControllerRef.current = null;
     }
   }
 
@@ -160,7 +241,7 @@ export function ChatPanel({
             />
           </label>
           <p className="settings-hint">
-            {apiKey ? "✓ APIキー設定済み（AI生成モード）" : "未設定（プリセットモード）"}
+            {apiKey ? "✓ APIキー設定済み（ストリーミングAI生成モード）" : "未設定（プリセットモード）"}
           </p>
         </div>
       )}
@@ -173,7 +254,9 @@ export function ChatPanel({
         ))}
         {loading && (
           <div className="chat-message assistant">
-            <div className="message-bubble loading">考え中...</div>
+            <div className="message-bubble loading">
+              ストリーミング中...
+            </div>
           </div>
         )}
         <div ref={messagesEndRef} />
@@ -188,9 +271,15 @@ export function ChatPanel({
           placeholder="UIの変更を指示..."
           disabled={loading}
         />
-        <button onClick={handleSend} disabled={loading || !input.trim()}>
-          <Send className="w-4 h-4" />
-        </button>
+        {loading ? (
+          <button onClick={handleStop} title="停止">
+            <Square className="w-4 h-4" />
+          </button>
+        ) : (
+          <button onClick={handleSend} disabled={!input.trim()}>
+            <Send className="w-4 h-4" />
+          </button>
+        )}
       </div>
     </div>
   );
