@@ -267,7 +267,7 @@ export function ChatPanel({
           type="text"
           value={input}
           onChange={(e) => setInput(e.target.value)}
-          onKeyDown={(e) => e.key === "Enter" && handleSend()}
+          onKeyDown={(e) => e.key === "Enter" && !e.nativeEvent.isComposing && handleSend()}
           placeholder="UIの変更を指示..."
           disabled={loading}
         />
