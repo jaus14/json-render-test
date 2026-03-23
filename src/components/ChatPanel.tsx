@@ -133,15 +133,17 @@ export function ChatPanel({
         setMessages((prev) => [...prev, { role: "assistant", content: "" }]);
 
         let accumulatedText = "";
-        const streamSpec: Spec = { root: "", elements: {} };
+        const streamSpec: Spec = {
+          root: currentSpec.root,
+          elements: { ...currentSpec.elements },
+        };
         let hasSpec = false;
-        const prevSpec = currentSpec;
 
         const parser = createMixedStreamParser({
           onPatch(patch) {
             hasSpec = true;
             applySpecPatch(streamSpec, patch);
-            // Only update rendered spec once root is set
+            // Update rendered spec as long as root is valid
             if (streamSpec.root) {
               onSpecGenerated({
                 root: streamSpec.root,
@@ -168,9 +170,9 @@ export function ChatPanel({
         }
         parser.flush();
 
-        // If spec patches were received but root is still empty, rollback
+        // If spec patches were received but root ended up empty, rollback
         if (hasSpec && !streamSpec.root) {
-          onSpecGenerated(prevSpec);
+          onSpecGenerated(currentSpec);
           hasSpec = false;
         }
 
