@@ -3,7 +3,7 @@ import type { Spec } from "@json-render/core";
 // Hardcode the component/action names to avoid type-casting issues with the catalog object
 const COMPONENT_NAMES = [
   "Card", "Stack", "Grid", "Separator", "Tabs", "Dialog",
-  "Table", "Heading", "Text", "Badge", "Alert", "Avatar",
+  "Table", "LineChart", "PieChart", "Heading", "Text", "Badge", "Alert", "Avatar",
   "Input", "Select", "Checkbox", "Button", "DropdownMenu",
 ];
 
@@ -57,6 +57,10 @@ ${actionNames.join(", ")}
 - /newUserName, /newUserEmail, /newUserRole: 新規ユーザー入力値
 - /editingUser: 編集中のユーザーオブジェクト
 - /showEditDialog: 編集ダイアログ表示フラグ
+- /pieLabels: 円グラフ用ラベル配列（ロール名）
+- /pieValues: 円グラフ用数値配列（各ロールのユーザー数）
+- /lineXLabels: 折れ線グラフ用X軸ラベル配列（月名）
+- /lineSeries: 折れ線グラフ用データ配列 [{name, values}]
 
 ## コンポーネントのprops例
 - Card: { title, description, maxWidth("sm"|"md"|"lg"|"full"), centered }
@@ -75,6 +79,8 @@ ${actionNames.join(", ")}
 - Avatar: { src, fallback, size("sm"|"md"|"lg") }
 - Separator: { orientation("horizontal"|"vertical") }
 - Tabs: { tabs: [{label, value}], defaultValue }
+- LineChart: { xLabels: ["Jan","Feb",...], series: [{name:"Sales", values:[100,150,...]}], caption?, xAxisLabel?, yAxisLabel? }
+- PieChart: { labels: ["Desktop","Mobile",...], values: [60,30,...], caption? }
 
 ## 動的な値
 - { $state: "/path" } で状態を参照
