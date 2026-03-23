@@ -135,16 +135,19 @@ export function ChatPanel({
         let accumulatedText = "";
         const streamSpec: Spec = { root: "", elements: {} };
         let hasSpec = false;
+        const prevSpec = currentSpec;
 
         const parser = createMixedStreamParser({
           onPatch(patch) {
             hasSpec = true;
             applySpecPatch(streamSpec, patch);
-            // Progressively update the rendered spec
-            onSpecGenerated({
-              root: streamSpec.root,
-              elements: { ...streamSpec.elements },
-            });
+            // Only update rendered spec once root is set
+            if (streamSpec.root) {
+              onSpecGenerated({
+                root: streamSpec.root,
+                elements: { ...streamSpec.elements },
+              });
+            }
           },
           onText(line) {
             accumulatedText += (accumulatedText ? "\n" : "") + line;
@@ -164,6 +167,12 @@ export function ChatPanel({
           parser.push(textDelta);
         }
         parser.flush();
+
+        // If spec patches were received but root is still empty, rollback
+        if (hasSpec && !streamSpec.root) {
+          onSpecGenerated(prevSpec);
+          hasSpec = false;
+        }
 
         // Final message update
         const finalContent = hasSpec
@@ -193,7 +202,8 @@ export function ChatPanel({
       }
     } catch (err) {
       if (err instanceof DOMException && err.name === "AbortError") {
-        // User cancelled - keep accumulated text
+        // User cancelled - keep accumulated text, rollback incomplete spec
+        onSpecGenerated(currentSpec);
         setMessages((prev) => {
           const last = prev[prev.length - 1];
           if (last?.role === "assistant" && !last.content) {
@@ -202,6 +212,8 @@ export function ChatPanel({
           return prev;
         });
       } else {
+        // Rollback spec on error
+        onSpecGenerated(currentSpec);
         setMessages((prev) => [
           ...prev,
           {
