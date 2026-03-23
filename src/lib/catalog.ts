@@ -29,6 +29,38 @@ export const catalog = defineCatalog(schema, {
         rows: [["Alice", "Admin"], ["Bob", "User"]],
       },
     },
+    LineChart: {
+      props: z.object({
+        xLabels: z.array(z.string()),
+        series: z.array(
+          z.object({ name: z.string(), values: z.array(z.number()) })
+        ),
+        caption: z.string().nullable(),
+        xAxisLabel: z.string().nullable(),
+        yAxisLabel: z.string().nullable(),
+      }),
+      description:
+        'Line chart with X/Y axes. xLabels: X-axis tick labels. series: array of {name, values[]} for each line. xAxisLabel/yAxisLabel: axis titles.',
+      example: {
+        xLabels: ["Jan", "Feb", "Mar"],
+        series: [{ name: "Sales", values: [100, 150, 130] }],
+        caption: "Monthly sales",
+      },
+    },
+    PieChart: {
+      props: z.object({
+        labels: z.array(z.string()),
+        values: z.array(z.number()),
+        caption: z.string().nullable(),
+      }),
+      description:
+        'Donut-style pie chart. labels: slice names. values: numeric values per slice. caption: optional description text.',
+      example: {
+        labels: ["Desktop", "Mobile", "Tablet"],
+        values: [60, 30, 10],
+        caption: "Device breakdown",
+      },
+    },
     Heading: shadcnComponentDefinitions.Heading,
     Text: shadcnComponentDefinitions.Text,
     Badge: shadcnComponentDefinitions.Badge,

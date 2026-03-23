@@ -1,7 +1,7 @@
 import { useState, useCallback, useMemo, useRef } from "react";
 import { Renderer, JSONUIProvider, createStateStore } from "@json-render/react";
 import type { Spec } from "@json-render/core";
-import { registry, handlers, usersToRows, usersToRowIds } from "../lib/registry";
+import { registry, handlers, usersToRows, usersToRowIds, computeChartData } from "../lib/registry";
 import { sampleUsers } from "../lib/sampleUsers";
 import { defaultSpec } from "../lib/defaultSpec";
 import { saveSpec, loadSpec, clearSpec } from "../lib/specStorage";
@@ -37,20 +37,28 @@ export function UserManager() {
   // External store so we can resolve defineRegistry's handler getters
   const store = useMemo(
     () =>
-      createStateStore({
-        users: sampleUsers,
-        filteredUsers: sampleUsers,
-        userRows: usersToRows(sampleUsers as unknown as Record<string, unknown>[]),
-        userRowIds: usersToRowIds(sampleUsers as unknown as Record<string, unknown>[]),
-        selectedIds: [] as string[],
-        selectedCount: 0,
-        searchQuery: "",
-        newUserName: "",
-        newUserEmail: "",
-        newUserRole: "viewer",
-        editingUser: null as unknown,
-        showEditDialog: false,
-      }),
+      (() => {
+        const users = sampleUsers as unknown as Record<string, unknown>[];
+        const chart = computeChartData(users);
+        return createStateStore({
+          users: sampleUsers,
+          filteredUsers: sampleUsers,
+          userRows: usersToRows(users),
+          userRowIds: usersToRowIds(users),
+          selectedIds: [] as string[],
+          selectedCount: 0,
+          searchQuery: "",
+          newUserName: "",
+          newUserEmail: "",
+          newUserRole: "viewer",
+          editingUser: null as unknown,
+          showEditDialog: false,
+          pieLabels: chart.pieLabels,
+          pieValues: chart.pieValues,
+          lineXLabels: chart.lineXLabels,
+          lineSeries: chart.lineSeries,
+        });
+      })(),
     []
   );
 

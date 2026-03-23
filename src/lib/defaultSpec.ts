@@ -12,7 +12,7 @@ export const defaultSpec: Spec = {
     page: {
       type: "Stack",
       props: { direction: "vertical", gap: "lg", align: "stretch" },
-      children: ["header", "toolbar", "user-table", "bottom-bar"],
+      children: ["header", "toolbar", "user-table", "bottom-bar", "matrix-section"],
     },
 
     // Header
@@ -66,6 +66,48 @@ export const defaultSpec: Spec = {
         rows: { $state: "/userRows" },
         rowIds: { $state: "/userRowIds" },
         selectedIds: { $state: "/selectedIds" },
+      },
+      children: [],
+    },
+
+    // Charts section
+    "matrix-section": {
+      type: "Stack",
+      props: { direction: "vertical", gap: "md", align: "stretch" },
+      children: ["charts-title", "charts-desc", "charts-row"],
+    },
+    "charts-title": {
+      type: "Heading",
+      props: { level: "h3", text: "ユーザー統計" },
+      children: [],
+    },
+    "charts-desc": {
+      type: "Text",
+      props: { text: "登録ユーザーのロール分布と登録推移", variant: "muted" },
+      children: [],
+    },
+    "charts-row": {
+      type: "Grid",
+      props: { columns: 2, gap: "md" },
+      children: ["line-chart-users", "pie-chart-roles"],
+    },
+    "line-chart-users": {
+      type: "LineChart",
+      props: {
+        xLabels: { $state: "/lineXLabels" },
+        series: { $state: "/lineSeries" },
+        caption: "ロール別 累積ユーザー数推移",
+        xAxisLabel: "登録月",
+        yAxisLabel: "ユーザー数",
+      },
+      children: [],
+    },
+    "pie-chart-roles": {
+      type: "PieChart",
+      props: {
+        labels: { $state: "/pieLabels" },
+        values: { $state: "/pieValues" },
+        caption: "ロール別ユーザー構成",
       },
       children: [],
     },
